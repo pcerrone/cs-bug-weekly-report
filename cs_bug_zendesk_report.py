@@ -90,8 +90,9 @@ def fetch_all_bugs():
         })
         batch = data.get("issues", [])
         issues.extend(batch)
-        log.info(f"  Fetched {len(issues)}/{data['total']} issues…")
-        if start + page_size >= data["total"]:
+total = data.get("total", data.get("totalCount", 0))
+        log.info(f"  Fetched {len(issues)}/{total} issues…")
+        if start + page_size >= total:
             break
         start += page_size
 
