@@ -82,7 +82,7 @@ def fetch_all_bugs():
     fields = "summary,status,labels,description,issuelinks,project,created,updated"
 
     while True:
-        data = jira_get("/search", {
+   data = jira_get("/search/jql", {
             "jql": JQL,
             "startAt": start,
             "maxResults": page_size,
