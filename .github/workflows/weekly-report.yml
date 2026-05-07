@@ -1,0 +1,47 @@
+name: CS Bug Zendesk Weekly Report
+
+on:
+  schedule:
+    - cron: '0 16 * * 1'   # Every Monday at 9am Phoenix time (UTC-7)
+  workflow_dispatch:        # Allows manual run from GitHub UI
+
+jobs:
+  run-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore snapshot cache
+        uses: actions/cache@v4
+        with:
+          path: zendesk_snapshot.json
+          key: zendesk-snapshot-${{ github.run_id }}
+          restore-keys: zendesk-snapshot-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests python-dotenv
+
+      - name: Run report
+        env:
+          JIRA_BASE_URL: https://scribdjira.atlassian.net
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: '587'
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          SNAPSHOT_FILE: ./zendesk_snapshot.json
+        run: python cs_bug_zendesk_report.py
+
+      - name: Save snapshot cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: zendesk_snapshot.json
+          key: zendesk-snapshot-${{ github.run_id }}
